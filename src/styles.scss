@@ -1,0 +1,30 @@
+@import "bootstrap/scss/bootstrap";
+
+[data-bs-theme-switch] svg.fa-brightness {
+  color: var(--bs-warning);
+}
+
+[data-bs-theme-switch] svg.fa-moon {
+  color: var(--bs-info);
+}
+
+[data-bs-theme="dark"] svg.fa-brightness {
+  display: none;
+}
+
+[data-bs-theme="light"] svg.fa-moon {
+  display: none;
+}
+
+.folder-item,
+.file-item {
+  cursor: pointer;
+  max-width: 18rem;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
