@@ -18,7 +18,6 @@ const Login = () => {
       const response = await apiMethods.googleValidateToken({
         body: { token },
       });
-      console.log("User:", response);
       login(response);
       navigate("/");
     } catch (error) {

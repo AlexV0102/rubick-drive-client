@@ -5,10 +5,9 @@ import { FolderType } from "../../utils/types";
 
 interface FolderListProps {
   folders: FolderType[];
-  onFolderClick: (id: string) => void;
 }
 
-const FolderList: React.FC<FolderListProps> = ({ folders, onFolderClick }) => {
+const FolderList: React.FC<FolderListProps> = ({ folders }) => {
   return (
     <List
       items={folders}

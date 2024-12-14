@@ -71,6 +71,7 @@ const postOrPut =
         requestData = formData;
         headers["Content-Type"] = "multipart/form-data";
       }
+      console.log("requestData", requestData);
 
       const response: AxiosResponse<T> = await axiosInstance({
         method,

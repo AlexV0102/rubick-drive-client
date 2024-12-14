@@ -1,11 +1,17 @@
-import { useRef } from "react";
-import { Dropdown } from "react-bootstrap";
+import { useRef, useState } from "react";
+import { Button, Dropdown, Form, Modal } from "react-bootstrap";
 import { useFolderStore } from "../store/folderStore";
+import { useAuthStore } from "../store/authStore";
+import { apiMethods } from "../api/apiMethods";
 
 const Navdropdown = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const addFile = useFolderStore((state) => state.addFile);
+  const user = useAuthStore((state) => state.user);
+
+  const [showModal, setShowModal] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
   const handleFileUploadClick = () => {
     if (fileInputRef.current) {
@@ -19,6 +25,21 @@ const Navdropdown = () => {
     }
   };
 
+  const handleCreateFolder = async () => {
+    if (folderName.trim()) {
+      try {
+        // TODO: to useFolderStore method
+        await apiMethods.createFolder({
+          body: { name: folderName, owner: user?.id },
+        });
+        setShowModal(false);
+        setFolderName("");
+      } catch (error) {
+        console.error("Failed to create folder:", error);
+      }
+    }
+  };
+
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -26,19 +47,9 @@ const Navdropdown = () => {
     if (files) {
       const file = files[0];
       if (file) {
-        console.log("Uploading file:", file.name);
-        console.log("File type:", file);
         try {
-          await addFile({
-            id: "some-id",
-            name: file.name,
-            fileType: file.type,
-            size: file.size,
-            data: file,
-            createdAt: new Date(),
-            parentId: null,
-          });
-          console.log("File uploaded successfully");
+          console.log(user);
+          addFile(file, user!.id);
         } catch (error) {
           console.error("Failed to upload file:", error);
         }
@@ -54,8 +65,9 @@ const Navdropdown = () => {
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <Dropdown.Item>Create file</Dropdown.Item>
-          <Dropdown.Item>Create folder</Dropdown.Item>
+          <Dropdown.Item onClick={() => setShowModal(true)}>
+            Create folder
+          </Dropdown.Item>
           <Dropdown.Divider />
           <Dropdown.Item onClick={handleFileUploadClick}>
             Upload file
@@ -79,6 +91,32 @@ const Navdropdown = () => {
         data-webkitdirectory="true"
         onChange={handleFileChange}
       />
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Create Folder</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="folderName">
+              <Form.Label>Folder Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter folder name"
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleCreateFolder}>
+            Create Folder
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
