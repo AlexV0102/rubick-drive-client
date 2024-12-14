@@ -1,34 +1,14 @@
-import { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import Search from "../components/Search";
 import FolderList from "../components/List/FolderList";
 import FileList from "../components/List/FileList";
 import { useFolderStore } from "../store/folderStore";
-import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
-  const [folders] = useState([
-    { id: "1", name: "Folder 1" },
-    { id: "2", name: "Folder 2" },
-    { id: "3", name: "Folder 3" },
-  ]);
+  const folders = useFolderStore((state) => state.folders);
+  const files = useFolderStore((state) => state.files);
 
-  const { files, getFiles } = useFolderStore((state) => state);
-
-  const handleFolderClick = (id: string) => {
-    console.log("Folder clicked:", id);
-  };
-
-  useEffect(() => {
-    const test = async () => {
-      getFiles();
-      console.log("here");
-      console.log(files);
-    };
-    test();
-
-    return () => {};
-  }, []);
+  console.log("folders", folders);
 
   return (
     <Container>
@@ -38,7 +18,7 @@ export default function HomePage() {
         </Col>
       </Row>
       <main>
-        <FolderList folders={folders} onFolderClick={handleFolderClick} />
+        <FolderList folders={folders} />
         <hr />
         <FileList files={files} />
       </main>

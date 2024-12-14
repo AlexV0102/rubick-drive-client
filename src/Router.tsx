@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FilePage from "./pages/FilePage";
+import FolderPage from "./pages/FolderPage";
 
 const routes = [
   {
@@ -19,8 +20,12 @@ const routes = [
             element: <HomePage />,
           },
           {
-            path: "/files/:fileName",
+            path: "/files/:fileId",
             element: <FilePage />,
+          },
+          {
+            path: "/folders/:folderId",
+            element: <FolderPage />,
           },
         ],
       },

@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import Login from "../components/Login/Login";
 import SignIn from "../components/Login/SignIn";
 import { Container, Nav, Tab } from "react-bootstrap";
+import { useAuthStore } from "../store/authStore";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
 
   const handleGoogleLogin = useGoogleLogin({
@@ -29,6 +31,10 @@ function LoginPage() {
   const handleTabChange = (tab: "login" | "signup") => {
     setActiveTab(tab);
   };
+
+  if (isAuthenticated) {
+    navigate("/");
+  }
 
   return (
     <Container className="mt-5 d-flex justify-content-center align-items-center flex-column">

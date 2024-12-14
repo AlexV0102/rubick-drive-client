@@ -1,12 +1,14 @@
 type ItemBase = {
-  id: string;
+  _id: string;
   name: string;
   createdAt: Date;
-  parentId?: string;
+  parentId?: string | null;
+  isPublic?: boolean;
 };
 
 type FolderType = ItemBase & {
-  children?: FolderType[] | FileType[];
+  files: ItemBase[];
+  subFolders: ItemBase[];
 };
 
 type FileType = ItemBase & {

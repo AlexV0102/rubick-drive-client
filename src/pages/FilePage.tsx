@@ -6,25 +6,35 @@ import { useFolderStore } from "../store/folderStore";
 import { FileType } from "../utils/types";
 
 export default function FilePage() {
-  const { fileName } = useParams<{ fileName: string }>();
+  const { fileId } = useParams<{ fileId: string }>(); // Updated to use `fileId`
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [fileMetadata, setFileMetadata] = useState<FileType | null>(null);
-  const findFileByName = useFolderStore((state) => state.findFileByName);
+
+  const findFileById = useFolderStore((state) => state.findFileById); // Updated to find by `id`
 
   useEffect(() => {
     const fetchFileData = async () => {
-      const file = await apiMethods.getFileData({
-        pathParams: fileName,
-        queryParams: {},
-        responseType: "blob",
-      });
-      const fileData = findFileByName(fileName!);
-      setFileMetadata(fileData);
-      setFileType(file.type);
-      const url = URL.createObjectURL(file);
-      setFileUrl(url);
+      if (!fileId) return;
+
+      try {
+        const file = await apiMethods.getFileData({
+          pathParams: fileId,
+          queryParams: {},
+          responseType: "blob",
+        });
+
+        const fileData = findFileById(fileId);
+        setFileMetadata(fileData);
+
+        setFileType(file.type);
+        const url = URL.createObjectURL(file);
+        setFileUrl(url);
+      } catch (error) {
+        console.error("Error fetching file data:", error);
+      }
     };
+
     fetchFileData();
 
     return () => {
@@ -32,26 +42,30 @@ export default function FilePage() {
         URL.revokeObjectURL(fileUrl);
       }
     };
-  }, [fileName]);
+  }, [fileId]);
 
-  if (!fileUrl) {
+  if (!fileUrl && fileMetadata) {
     return <div>Loading...</div>;
   }
 
-  if (fileType?.startsWith("image/") && fileMetadata) {
+  if (fileType?.startsWith("image/")) {
     return (
-      <FilePreview file={fileMetadata.name} id={fileMetadata.id}>
-        <img src={fileUrl} alt={fileName} style={{ maxWidth: "100%" }} />
+      <FilePreview file={fileMetadata.name} id={fileMetadata._id}>
+        <img
+          src={fileUrl}
+          alt={fileMetadata.name}
+          style={{ maxWidth: "100%" }}
+        />
       </FilePreview>
     );
   }
 
-  if (fileType === "application/pdf" && fileMetadata) {
+  if (fileType === "application/pdf") {
     return (
-      <FilePreview id={fileMetadata?.id} file={fileMetadata?.name}>
+      <FilePreview id={fileMetadata._id} file={fileMetadata.name}>
         <iframe
           src={fileUrl}
-          title={fileName}
+          title={fileMetadata.name}
           style={{ width: "100%", height: "600px" }}
         />
       </FilePreview>
@@ -80,12 +94,12 @@ export default function FilePage() {
     );
   }
 
-  if (fileType?.startsWith("text/")) {
+  if (fileType?.startsWith("text/") && fileMetadata) {
     return (
-      <FilePreview>
+      <FilePreview id={fileMetadata?._id} file={fileMetadata?.name}>
         <iframe
           src={fileUrl}
-          title={fileName}
+          title={fileMetadata?.name}
           style={{ width: "100%", height: "600px" }}
         />
       </FilePreview>
@@ -94,8 +108,8 @@ export default function FilePage() {
 
   return (
     <div>
-      <a href={fileUrl} download={fileName}>
-        Download {fileName}
+      <a href={fileUrl} download={fileMetadata?.name}>
+        Download {fileMetadata?.name}
       </a>
     </div>
   );

@@ -23,7 +23,10 @@ const Navbar: React.FC = () => {
   return (
     <Container className="mb-3">
       <BootstrapNavbar expand="lg">
-        <BootstrapNavbar.Brand href="/">MyApp</BootstrapNavbar.Brand>
+        <BootstrapNavbar.Brand href="/">
+          <i className="fa-solid fa-cube me-1" />
+          Rubick drive
+        </BootstrapNavbar.Brand>
         <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
         <BootstrapNavbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto gap-3">
