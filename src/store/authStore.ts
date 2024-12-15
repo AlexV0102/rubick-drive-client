@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { apiMethods } from "../api/apiMethods";
 
 type User = {
   id: string;
@@ -10,46 +9,36 @@ type User = {
   createdAt: Date;
   updatedAt: Date;
 };
-type TokenGoogleResponse = {
-  token: string;
-  user: User;
-};
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  login: (googleResponse: TokenGoogleResponse) => void;
+  loading: boolean;
+  error: string | null;
+  setUser: (user: User | null) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
   logout: () => void;
-  refreshToken: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: !!localStorage.getItem("authToken"),
+  isAuthenticated: !!sessionStorage.getItem("authToken"),
   user: null,
-  login: (googleResponse: TokenGoogleResponse) => {
-    localStorage.setItem("authToken", googleResponse.token);
-    set({ isAuthenticated: true, user: googleResponse.user });
-  },
+  loading: false,
+  error: null,
+
+  setUser: (user) =>
+    set({
+      user,
+      isAuthenticated: !!user,
+    }),
+
+  setLoading: (loading) => set({ loading }),
+
+  setError: (error) => set({ error }),
+
   logout: () => {
     localStorage.removeItem("authToken");
-    set({ isAuthenticated: false, user: null });
-  },
-  refreshToken: async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        set({ isAuthenticated: false, user: null });
-        return;
-      }
-      const result = await apiMethods.refreshToken({ body: { token } });
-
-      set({
-        isAuthenticated: true,
-        user: result.data.user,
-      });
-    } catch (error) {
-      console.error("Failed to refresh token", error);
-      set({ isAuthenticated: false, user: null });
-    }
+    set({ isAuthenticated: false, user: null, error: null });
   },
 }));

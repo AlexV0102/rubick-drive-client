@@ -2,14 +2,17 @@ import { Col, Container, Row } from "react-bootstrap";
 import Search from "../components/Search";
 import FolderList from "../components/List/FolderList";
 import FileList from "../components/List/FileList";
-import { useFolderStore } from "../store/folderStore";
+import { useGetFoldersByUser } from "../api/queries/folders";
+import { useGetFiles } from "../api/queries/files";
+import Spinner from "../components/Spinner";
 
 export default function HomePage() {
-  const folders = useFolderStore((state) => state.folders);
-  const files = useFolderStore((state) => state.files);
+  const { data: folders = [], isLoading } = useGetFoldersByUser();
+  const { data: files = [], isLoading: isLoadingFiles } = useGetFiles();
 
-  console.log("folders", folders);
-
+  if (isLoading && isLoadingFiles) {
+    return <Spinner />;
+  }
   return (
     <Container>
       <Row>
