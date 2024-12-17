@@ -1,19 +1,18 @@
 import { useRef, useState } from "react";
-import { Button, Dropdown, Form, Modal } from "react-bootstrap";
-import { useAuthStore } from "../store/authStore";
+import { Button, Container, Dropdown, Form, Modal } from "react-bootstrap";
 import { createFolder } from "../api/apiMethods/folders";
-import { uploadFile, updateFilePermissions } from "../api/apiMethods/files";
+import { uploadFile } from "../api/apiMethods/files";
 
 const Navdropdown = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
-  const user = useAuthStore((state) => state.user);
 
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [folderName, setFolderName] = useState("");
-  const [permissions, setPermissions] = useState([{ email: "", role: "" }]);
   const [file, setFile] = useState<File | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileUploadClick = () => {
     if (fileInputRef.current) {
@@ -43,38 +42,29 @@ const Navdropdown = () => {
     const files = event.target.files;
     if (files) {
       setFile(files[0]);
-      setShowUploadModal(true); // Open upload modal
+      setShowUploadModal(true);
     }
-  };
-
-  const handlePermissionChange = (
-    index: number,
-    field: "email" | "role",
-    value: string
-  ) => {
-    setPermissions((prev) =>
-      prev.map((perm, i) => (i === index ? { ...perm, [field]: value } : perm))
-    );
-  };
-
-  const addPermissionField = () => {
-    setPermissions((prev) => [...prev, { email: "", role: "" }]);
   };
 
   const handleFileUpload = async () => {
     if (!file) return;
 
     try {
-      const response = await uploadFile(file);
-      const fileId = response.id;
-
-      // Update permissions
-      await updateFilePermissions(fileId, permissions);
+      await uploadFile(file, isPublic);
 
       setShowUploadModal(false);
-      setPermissions([{ email: "", role: "" }]); // Reset permissions
     } catch (error) {
       console.error("Failed to upload file:", error);
+    }
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      setFile(files[0]);
+      setShowUploadModal(true);
     }
   };
 
@@ -90,7 +80,7 @@ const Navdropdown = () => {
             Create folder
           </Dropdown.Item>
           <Dropdown.Divider />
-          <Dropdown.Item onClick={handleFileUploadClick}>
+          <Dropdown.Item onClick={() => setShowUploadModal(true)}>
             Upload file
           </Dropdown.Item>
           <Dropdown.Item onClick={handleFolderUploadClick}>
@@ -113,7 +103,6 @@ const Navdropdown = () => {
         onChange={handleFileChange}
       />
 
-      {/* Create Folder Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create Folder</Modal.Title>
@@ -140,59 +129,55 @@ const Navdropdown = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      {/* Upload File and Permissions Modal */}
       <Modal show={showUploadModal} onHide={() => setShowUploadModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Upload File and Set Permissions</Modal.Title>
+          <Modal.Title>Upload File</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>File: {file?.name}</p>
-          <h5>Set Permissions</h5>
-          {permissions.map((perm, index) => (
-            <div key={index} className="d-flex gap-2 mb-2">
-              <Form.Control
-                type="email"
-                placeholder="Email"
-                value={perm.email}
-                onChange={(e) =>
-                  handlePermissionChange(index, "email", e.target.value)
-                }
-              />
-              <Form.Select
-                value={perm.role}
-                onChange={(e) =>
-                  handlePermissionChange(index, "role", e.target.value)
-                }
-              >
-                <option value="">Select role</option>
-                <option value="viewer">Viewer</option>
-                <option value="editor">Editor</option>
-              </Form.Select>
-            </div>
-          ))}
-          <Button
-            variant="link"
-            onClick={addPermissionField}
-            className="p-0 mb-2"
-          >
-            + Add more
-          </Button>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowUploadModal(false);
-              setPermissions([{ email: "", role: "" }]);
+          <Container
+            className={`p-3 mb-3 border rounded ${
+              isDragging ? "bg-light border-primary" : "border-secondary"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
             }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleFileDrop}
+            onClick={handleFileUploadClick}
           >
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleFileUpload}>
-            Upload File
-          </Button>
-        </Modal.Footer>
+            {isDragging ? (
+              <p className="text-primary">Release to upload file</p>
+            ) : file ? (
+              <p>Selected File: {file.name}</p>
+            ) : (
+              <p>Drag and drop file here or click to upload</p>
+            )}
+          </Container>
+
+          <Form className="mb-3">
+            <Form.Group>
+              <Form.Check
+                type="switch"
+                id="public-switch"
+                label={`File Visibility: ${isPublic ? "Public" : "Private"}`}
+                checked={isPublic}
+                onChange={() => setIsPublic((prev) => !prev)}
+              />
+            </Form.Group>
+          </Form>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowUploadModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleFileUpload}>
+              Upload
+            </Button>
+          </Modal.Footer>
+        </Modal.Body>
       </Modal>
     </>
   );

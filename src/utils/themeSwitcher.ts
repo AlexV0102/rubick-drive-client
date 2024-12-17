@@ -5,8 +5,6 @@ export { setInitialTheme, handleThemeSwitch };
 const DARK_THEME = "dark";
 const LIGHT_THEME = "light";
 
-const setStoredTheme = setItemLocalStorage("theme");
-
 const getPreferredTheme = () => {
   const storedTheme = getItemLocalStorage("theme");
   if (storedTheme) return storedTheme;
@@ -15,7 +13,7 @@ const getPreferredTheme = () => {
     : LIGHT_THEME;
 };
 
-const setTheme = (theme) => {
+const setTheme = (theme: string) => {
   const isAutoDark =
     theme === "auto" &&
     typeof window &&
@@ -25,7 +23,7 @@ const setTheme = (theme) => {
 };
 const handleThemeSwitch = () => {
   const theme = getPreferredTheme() === DARK_THEME ? LIGHT_THEME : DARK_THEME;
-  setStoredTheme(theme);
+  setItemLocalStorage("theme", theme);
   setTheme(theme);
 };
 

@@ -20,6 +20,9 @@ const Search = () => {
           aria-label="Search input"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
         />
         <Button variant="primary" onClick={handleSearch}>
           Search

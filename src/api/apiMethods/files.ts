@@ -7,9 +7,10 @@ export const deleteFile = wrapErrorHandling(async (id: string) => {
 });
 
 export const uploadFile = wrapErrorHandling(
-  async (file: File, folderId?: string) => {
+  async (file: File, isPublic?: boolean, folderId?: string) => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("isPublic", String(isPublic));
 
     if (folderId) formData.append("folderId", folderId);
 
@@ -44,3 +45,12 @@ export const cloneFile = wrapErrorHandling(async (fileId: string) => {
   const response = await axiosInstance.post(`/files/${fileId}/clone`);
   return response.data;
 });
+
+export const changeFileVisibility = wrapErrorHandling(
+  async (fileId, isPublic) => {
+    const response = await axiosInstance.put(`/files/${fileId}/visibility`, {
+      isPublic,
+    });
+    return response.data;
+  }
+);

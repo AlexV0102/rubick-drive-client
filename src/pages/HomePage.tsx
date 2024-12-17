@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <Container>
       <Row>
-        <Col className="offset-3" md="6">
+        <Col className="offset-md-3" md="6">
           <Search />
         </Col>
       </Row>

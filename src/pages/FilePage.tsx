@@ -6,7 +6,7 @@ import Spinner from "../components/Spinner";
 
 export default function FilePage() {
   const { fileId } = useParams<{ fileId: string }>();
-  const { metadata, blob, isLoading, isError, error } = useGetFileData(fileId!);
+  const { metadata, blob, isLoading, isError } = useGetFileData(fileId!);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
 
@@ -28,6 +28,10 @@ export default function FilePage() {
       }
     };
   }, [blob, fileId]);
+
+  if (isError) {
+    return <div>Access denied </div>;
+  }
 
   if (isLoading) {
     return <Spinner />;
@@ -86,9 +90,5 @@ export default function FilePage() {
     );
   };
 
-  return (
-    <FilePreview file={metadata.name} id={metadata._id}>
-      {renderFileContent()}
-    </FilePreview>
-  );
+  return <FilePreview metadata={metadata}>{renderFileContent()}</FilePreview>;
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const File = (file: FileType) => {
   return (
-    <Col xs="1" md="2" lg="3" xl="4" className="file-item mb-3">
+    <Col xs="1" md="2" lg="3" xl="4" className="card-item mb-3">
       <Link
         to={`/files/${file._id}`}
         className="text-decoration-none text-primary"

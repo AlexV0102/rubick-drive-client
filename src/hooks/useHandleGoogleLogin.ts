@@ -1,5 +1,6 @@
 import { useAuthStore } from "../store/authStore";
 import { useGoogleLogin } from "../api/queries/auth";
+import { setItemLocalStorage } from "../utils/localStorage";
 
 export const useHandleGoogleLogin = () => {
   const { mutate, error } = useGoogleLogin();
@@ -12,7 +13,8 @@ export const useHandleGoogleLogin = () => {
   ) => {
     mutate(token, {
       onSuccess: (response) => {
-        sessionStorage.setItem("authToken", response.token);
+        setItemLocalStorage("accessToken", response.accessToken);
+        setItemLocalStorage("refreshToken", response.refreshToken);
         setUser(response.user);
 
         if (callbacks?.onSuccess) {

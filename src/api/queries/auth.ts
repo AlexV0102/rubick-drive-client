@@ -21,15 +21,3 @@ export const useGoogleLogin = () =>
       return response.data;
     },
   });
-
-// TODO: any to response or else
-export const useRefreshToken = () =>
-  useMutation<any, Error, string>({
-    mutationFn: async (token: string) => {
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-        token,
-      });
-      console.log("response", response);
-      return response.data;
-    },
-  });

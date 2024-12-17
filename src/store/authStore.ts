@@ -1,4 +1,8 @@
 import { create } from "zustand";
+import {
+  getItemLocalStorage,
+  removeItemLocalStorage,
+} from "../utils/localStorage";
 
 type User = {
   id: string;
@@ -15,6 +19,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  // authToken: string | null;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -22,7 +27,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: !!sessionStorage.getItem("authToken"),
+  isAuthenticated: !!getItemLocalStorage("accessToken"),
   user: null,
   loading: false,
   error: null,
@@ -38,7 +43,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   setError: (error) => set({ error }),
 
   logout: () => {
-    localStorage.removeItem("authToken");
+    removeItemLocalStorage("accessToken");
+    removeItemLocalStorage("refreshToken");
     set({ isAuthenticated: false, user: null, error: null });
   },
 }));

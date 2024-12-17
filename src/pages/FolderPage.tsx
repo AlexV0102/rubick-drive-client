@@ -3,7 +3,6 @@ import { Form, useParams } from "react-router-dom";
 import FolderList from "../components/List/FolderList";
 import FileList from "../components/List/FileList";
 import { FileType, FolderType } from "../utils/types";
-import { useAuthStore } from "../store/authStore";
 import { useGetFolderById } from "../api/queries/folders";
 import { addSubfolder, addFileToFolder } from "../api/apiMethods/folders";
 import {
@@ -16,6 +15,9 @@ import {
   FormLabel,
   FormControl,
 } from "react-bootstrap";
+import Spinner from "../components/Spinner";
+import Actions from "../components/Actions";
+import VisibilityAndPermissions from "../components/VisibilityModal";
 
 export default function FolderPage() {
   const { folderId } = useParams<{ folderId: string }>();
@@ -24,21 +26,17 @@ export default function FolderPage() {
     isLoading,
     isError,
     refetch,
-  } = useGetFolderById(folderId || "");
-  const user = useAuthStore((state) => state.user);
+  } = useGetFolderById(folderId!);
 
   const [isDragging, setIsDragging] = useState(false);
   const [subfolderName, setSubfolderName] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
   const handleAddSubfolder = async () => {
-    console.log("subfolderName", subfolderName);
-    console.log("user", user);
-    if (!subfolderName || !user) return;
+    if (!subfolderName) return;
 
     await addSubfolder(folderId!, {
       name: subfolderName,
-      owner: user.id,
       parentFolderId: folderId!,
     });
     setSubfolderName("");
@@ -46,10 +44,7 @@ export default function FolderPage() {
   };
 
   const handleFileUpload = async (files: FileList) => {
-    console.log("files", files);
-    console.log("folderId", folderId);
-    console.log("user", user);
-    if (!folderId || !user || files.length === 0) return;
+    if (!folderId || files.length === 0) return;
 
     for (const file of files) {
       await addFileToFolder(folderId, file);
@@ -84,7 +79,7 @@ export default function FolderPage() {
     }
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Spinner />;
   if (isError) return <p>Error loading folder details</p>;
 
   return (
@@ -92,37 +87,28 @@ export default function FolderPage() {
       <Row className="mb-4">
         <Col>
           <h2 className="text-primary">{folder?.name || "Folder"}</h2>
-          <p className="text-muted">Folder ID: {folderId}</p>
+          <Actions
+            folderId={folderId!}
+            folderName={folder?.name || ""}
+            refetch={refetch}
+          />
+          <VisibilityAndPermissions
+            folderId={folderId!}
+            isPublic={folder?.isPublic || false}
+            refetch={refetch}
+          />
         </Col>
       </Row>
 
-      {/* File and Folder Lists */}
-      <Row>
+      <Row className="g-3 d-flex flex-row">
         <Col md={6}>
-          <Card>
-            <Card.Header>
-              <strong>Subfolders</strong>
-            </Card.Header>
-            <Card.Body>
-              <FolderList
-                folders={(folder?.subFolders as FolderType[]) || []}
-              />
-            </Card.Body>
-          </Card>
+          <FolderList folders={(folder?.subFolders as FolderType[]) || []} />
         </Col>
         <Col md={6}>
-          <Card>
-            <Card.Header>
-              <strong>Files</strong>
-            </Card.Header>
-            <Card.Body>
-              <FileList files={(folder?.files as FileType[]) || []} />
-            </Card.Body>
-          </Card>
+          <FileList files={(folder?.files as FileType[]) || []} />
         </Col>
       </Row>
 
-      {/* File Upload Section */}
       <Row className="mt-4">
         <Col>
           <Card>
@@ -157,10 +143,8 @@ export default function FolderPage() {
           </Card>
         </Col>
       </Row>
-
-      {/* Add Subfolder */}
       <Row className="mt-4">
-        <Col md={{ span: 6, offset: 3 }}>
+        <Col md={{ span: 6 }}>
           <Card>
             <Card.Header>
               <strong>Add Subfolder</strong>

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const Folder = ({ _id, name }: FolderType) => {
   return (
-    <Col xs="1" md="2" lg="3" xl="4" className="folder-item">
+    <Col xs="1" md="2" lg="3" xl="4" className="card-item mb-3">
       <Link
         to={`/folders/${_id}`}
         className="text-decoration-none text-primary"

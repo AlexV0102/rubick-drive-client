@@ -9,8 +9,12 @@ export function wrapErrorHandling<T extends (...args: any[]) => Promise<any>>(
     try {
       return await fn(...args);
     } catch (error) {
-      // handle error
-
+      const axiosError = error as AxiosError;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        "An error occurred";
+      toast.error(errorMessage);
       throw error;
     }
   } as T;
