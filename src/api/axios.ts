@@ -31,7 +31,9 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.request.use(
   async (config) => {
     const accessToken = getItemLocalStorage("accessToken");
+    const user = useAuthStore.getState().user;
 
+    if (!user) return config;
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -46,7 +48,6 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Prevent retrying the refresh token endpoint
     if (originalRequest.url.includes("/refresh-token")) {
       return Promise.reject(error);
     }
@@ -65,14 +66,16 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const newAccessToken = await refreshAccessToken();
+        const { user, accessToken } = await refreshAccessToken();
 
-        if (newAccessToken) {
-          setItemLocalStorage("accessToken", newAccessToken);
-          axiosInstance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-          processQueue(null, newAccessToken);
+        if (accessToken) {
+          useAuthStore.getState().setUser(user);
 
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          setItemLocalStorage("accessToken", accessToken);
+          axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+          processQueue(null, accessToken);
+
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return axiosInstance(originalRequest);
         } else {
           console.error("No new access token received. Logging out.");

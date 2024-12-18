@@ -1,32 +1,43 @@
 import { useState } from "react";
 import { Button, Modal, Form, FormControl } from "react-bootstrap";
-import {
-  changeFolderVisibility,
-  updateFolderPermissions,
-} from "../api/apiMethods/folders";
 
-export default function VisibilityAndPermissions({
-  folderId,
-  isPublic,
-  refetch,
-}: {
-  folderId: string;
+interface Permission {
+  email: string;
+  role: string;
+}
+
+interface VisibilityPermissionsProps {
+  resourceId: string;
   isPublic: boolean;
+  resourceType: "File" | "Folder";
+  onChangeVisibility: (id: string, visibility: boolean) => Promise<void>;
+  onUpdatePermissions: (id: string, permissions: Permission[]) => Promise<void>;
   refetch: () => void;
-}) {
+}
+
+export default function VisibilityPermissions({
+  resourceId,
+  isPublic,
+  resourceType,
+  onChangeVisibility,
+  onUpdatePermissions,
+  refetch,
+}: VisibilityPermissionsProps) {
   const [showModal, setShowModal] = useState(false);
   const [publicState, setPublicState] = useState(isPublic);
-  const [permissions, setPermissions] = useState([{ email: "", role: "" }]);
+  const [permissions, setPermissions] = useState<Permission[]>([
+    { email: "", role: "" },
+  ]);
 
   const handleChangeVisibility = async () => {
-    await changeFolderVisibility(folderId, publicState);
+    await onChangeVisibility(resourceId, publicState);
     refetch();
     setShowModal(false);
   };
 
   const handlePermissionChange = (
     index: number,
-    field: string,
+    field: keyof Permission,
     value: string
   ) => {
     const updated = permissions.map((p, i) =>
@@ -39,7 +50,7 @@ export default function VisibilityAndPermissions({
     setPermissions([...permissions, { email: "", role: "" }]);
 
   const savePermissions = async () => {
-    await updateFolderPermissions(folderId, permissions);
+    await onUpdatePermissions(resourceId, permissions);
     refetch();
     setShowModal(false);
   };
@@ -47,16 +58,18 @@ export default function VisibilityAndPermissions({
   return (
     <>
       <Button variant="secondary" onClick={() => setShowModal(true)}>
-        Manage Visibility and Permissions
+        Manage {resourceType} Visibility and Permissions
       </Button>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Manage Visibility and Permissions</Modal.Title>
+          <Modal.Title>
+            Manage {resourceType} Visibility and Permissions
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group>
-            <Form.Label>Folder Visibility</Form.Label>
+            <Form.Label>{resourceType} Visibility</Form.Label>
             <Form.Check
               type="switch"
               id="visibility-switch"

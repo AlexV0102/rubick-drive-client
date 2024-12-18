@@ -8,7 +8,6 @@ interface FileListProps {
 }
 
 const FileList: React.FC<FileListProps> = ({ files }) => {
-  console.log("files", files);
   return (
     <List
       items={files}

@@ -4,7 +4,12 @@ import FolderList from "../components/List/FolderList";
 import FileList from "../components/List/FileList";
 import { FileType, FolderType } from "../utils/types";
 import { useGetFolderById } from "../api/queries/folders";
-import { addSubfolder, addFileToFolder } from "../api/apiMethods/folders";
+import {
+  addSubfolder,
+  addFileToFolder,
+  changeFolderVisibility,
+  updateFolderPermissions,
+} from "../api/apiMethods/folders";
 import {
   Button,
   Card,
@@ -17,7 +22,8 @@ import {
 } from "react-bootstrap";
 import Spinner from "../components/Spinner";
 import Actions from "../components/Actions";
-import VisibilityAndPermissions from "../components/VisibilityModal";
+import VisibilityPermissions from "../components/VisibilityModal";
+import { useAuthStore } from "../store/authStore";
 
 export default function FolderPage() {
   const { folderId } = useParams<{ folderId: string }>();
@@ -27,10 +33,18 @@ export default function FolderPage() {
     isError,
     refetch,
   } = useGetFolderById(folderId!);
+  const user = useAuthStore((state) => state.user);
 
   const [isDragging, setIsDragging] = useState(false);
   const [subfolderName, setSubfolderName] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+
+  const userPermission = folder?.sharedWith.find(
+    (perm) => perm.email === user?.email
+  );
+
+  const canEdit =
+    userPermission?.role === "editor" || folder?.owner === user?.id;
 
   const handleAddSubfolder = async () => {
     if (!subfolderName) return;
@@ -87,16 +101,23 @@ export default function FolderPage() {
       <Row className="mb-4">
         <Col>
           <h2 className="text-primary">{folder?.name || "Folder"}</h2>
-          <Actions
-            folderId={folderId!}
-            folderName={folder?.name || ""}
-            refetch={refetch}
-          />
-          <VisibilityAndPermissions
-            folderId={folderId!}
-            isPublic={folder?.isPublic || false}
-            refetch={refetch}
-          />
+          {canEdit && (
+            <>
+              <Actions
+                folderId={folderId!}
+                folderName={folder?.name || ""}
+                refetch={refetch}
+              />
+              <VisibilityPermissions
+                resourceId={folderId!}
+                isPublic={folder.isPublic}
+                resourceType="Folder"
+                onChangeVisibility={changeFolderVisibility}
+                onUpdatePermissions={updateFolderPermissions}
+                refetch={refetch}
+              />
+            </>
+          )}
         </Col>
       </Row>
 

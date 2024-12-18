@@ -15,6 +15,7 @@ type User = {
 };
 
 interface AuthState {
+  getState(): unknown;
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;

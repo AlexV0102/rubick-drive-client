@@ -17,5 +17,5 @@ export const refreshAccessToken = wrapErrorHandling(async () => {
   const response = await axiosInstance.post("/auth/refresh-token", {
     refreshToken,
   });
-  return response.data.accessToken;
+  return response.data;
 });

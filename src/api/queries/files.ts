@@ -34,6 +34,10 @@ export const useGetFileData = (id: string) => {
     isLoading: metadataQuery.isLoading || blobQuery.isLoading,
     isError: metadataQuery.isError || blobQuery.isError,
     error: metadataQuery.error || blobQuery.error,
+    refetch: () => {
+      metadataQuery.refetch();
+      blobQuery.refetch();
+    },
   };
 };
 

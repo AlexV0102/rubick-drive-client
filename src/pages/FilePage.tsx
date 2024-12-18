@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import FilePreview from "../components/FilePreview";
 import { useGetFileData } from "../api/queries/files";
 import Spinner from "../components/Spinner";
+import { Button, Card } from "react-bootstrap";
 
 export default function FilePage() {
   const { fileId } = useParams<{ fileId: string }>();
@@ -11,17 +12,10 @@ export default function FilePage() {
   const [fileType, setFileType] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFileData = async () => {
-      if (!blob) return;
-      try {
-        setFileType(blob.type);
-        const url = URL.createObjectURL(blob);
-        setFileUrl(url);
-      } catch (error) {
-        console.error("Error fetching file data:", error);
-      }
-    };
-    fetchFileData();
+    if (!blob) return;
+    setFileType(blob.type);
+    const url = URL.createObjectURL(blob);
+    setFileUrl(url);
     return () => {
       if (fileUrl) {
         URL.revokeObjectURL(fileUrl);
@@ -39,56 +33,56 @@ export default function FilePage() {
 
   const renderFileContent = () => {
     if (!fileUrl || !fileType) return null;
-    if (fileType.startsWith("image/")) {
-      return (
-        <img src={fileUrl} alt={metadata.name} style={{ maxWidth: "100%" }} />
-      );
-    }
 
-    if (fileType === "application/pdf") {
-      return (
-        <iframe
-          src={fileUrl}
-          title={metadata.name}
-          style={{ width: "100%", height: "600px" }}
-        />
-      );
+    switch (true) {
+      case fileType.startsWith("image/"):
+        return <img src={fileUrl} alt={metadata.name} className="img-fluid" />;
+      case fileType === "application/pdf":
+        return (
+          <iframe
+            src={fileUrl}
+            title={metadata.name}
+            style={{ width: "100%", height: "600px" }}
+          />
+        );
+      case fileType.startsWith("video/"):
+        return (
+          <video controls className="w-100">
+            <source src={fileUrl} type={fileType} />
+          </video>
+        );
+      case fileType.startsWith("audio/"):
+        return (
+          <audio controls className="w-100">
+            <source src={fileUrl} type={fileType} />
+          </audio>
+        );
+      case fileType.startsWith("text/"):
+        return (
+          <iframe
+            src={fileUrl}
+            title={metadata.name}
+            style={{ width: "100%", height: "600px" }}
+          />
+        );
+      default:
+        return <div>Something is wrong</div>;
     }
-
-    if (fileType.startsWith("video/")) {
-      return (
-        <video controls style={{ maxWidth: "100%" }}>
-          <source src={fileUrl} type={fileType} />
-          Your browser does not support the video tag.
-        </video>
-      );
-    }
-
-    if (fileType.startsWith("audio/")) {
-      return (
-        <audio controls>
-          <source src={fileUrl} type={fileType} />
-          Your browser does not support the audio tag.
-        </audio>
-      );
-    }
-
-    if (fileType.startsWith("text/")) {
-      return (
-        <iframe
-          src={fileUrl}
-          title={metadata.name}
-          style={{ width: "100%", height: "600px" }}
-        />
-      );
-    }
-
-    return (
-      <a href={fileUrl} download={metadata.name}>
-        Download {metadata.name}
-      </a>
-    );
   };
 
-  return <FilePreview metadata={metadata}>{renderFileContent()}</FilePreview>;
+  return (
+    <FilePreview metadata={metadata}>
+      <Card className="shadow-sm">
+        <Card.Header className=" text-white text-center">
+          <h5 className="mb-0">{metadata?.name || "File"}</h5>
+        </Card.Header>
+        <Card.Body className="text-center">{renderFileContent()}</Card.Body>
+        <Card.Footer>
+          <a href={fileUrl!} download={metadata.name}>
+            Download {metadata.name}
+          </a>
+        </Card.Footer>
+      </Card>
+    </FilePreview>
+  );
 }
