@@ -5,6 +5,7 @@ import {
 } from "../utils/localStorage";
 import { refreshAccessToken } from "./apiMethods/methods";
 import { useAuthStore } from "../store/authStore";
+import { ACCESS_TOKEN_KEY } from "../helpers/constants";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -29,7 +30,7 @@ const processQueue = (error, token = null) => {
 
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const accessToken = getItemLocalStorage("accessToken");
+    const accessToken = getItemLocalStorage(ACCESS_TOKEN_KEY);
     const user = useAuthStore.getState().user;
 
     if (!user) return config;
@@ -70,7 +71,7 @@ axiosInstance.interceptors.response.use(
         if (accessToken) {
           useAuthStore.getState().setUser(user);
 
-          setItemLocalStorage("accessToken", accessToken);
+          setItemLocalStorage(ACCESS_TOKEN_KEY, accessToken);
           axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
           processQueue(null, accessToken);
 

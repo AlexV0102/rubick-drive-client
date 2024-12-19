@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, useParams } from "react-router-dom";
 import FolderList from "../components/List/FolderList";
 import FileList from "../components/List/FileList";
-import { FileType, FolderType } from "../utils/types";
+import { FileType, FolderType, PermissionType } from "../utils/types";
 import { useGetFolderById } from "../api/queries/folders";
 import {
   addSubfolder,
@@ -37,16 +37,16 @@ export default function FolderPage() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [subfolderName, setSubfolderName] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
   const userPermission = folder?.sharedWith.find(
-    (perm) => perm.email === user?.email
+    (perm: PermissionType) => perm.email === user?.email
   );
 
   const canEdit =
     userPermission?.role === "editor" || folder?.owner === user?.id;
 
-  const handleAddSubfolder = async () => {
+  const handleAddSubfolder = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!subfolderName) return;
 
     await addSubfolder(folderId!, {
@@ -130,76 +130,77 @@ export default function FolderPage() {
         </Col>
       </Row>
 
-      <Row className="mt-4">
-        <Col>
-          <Card>
-            <Card.Header>
-              <strong>Upload Files</strong>
-            </Card.Header>
-            <Card.Body>
-              <div
-                className={`border p-4 text-center rounded ${
-                  isDragging ? "bg-info" : ""
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById("fileInput")?.click()}
-                style={{ cursor: "pointer" }}
-              >
-                <p>
-                  {isDragging
-                    ? "Drop files to upload..."
-                    : "Drag and drop files here, or click to select files"}
-                </p>
-              </div>
-              <FormControl
-                id="fileInput"
-                type="file"
-                multiple
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-              />
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-      <Row className="mt-4">
-        <Col md={{ span: 6 }}>
-          <Card>
-            <Card.Header>
-              <strong>Add Subfolder</strong>
-            </Card.Header>
-            <Card.Body>
-              <Form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddSubfolder();
-                }}
-              >
-                <FormGroup controlId="subfolderName">
-                  <FormLabel>Subfolder Name</FormLabel>
-                  <FormControl
-                    type="text"
-                    placeholder="Enter subfolder name"
-                    value={subfolderName}
-                    onChange={(e) => setSubfolderName(e.target.value)}
-                  />
-                </FormGroup>
-                <div className="mt-3 text-end">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={!subfolderName}
+      {canEdit && (
+        <>
+          <Row className="mt-4">
+            <Col>
+              <Card>
+                <Card.Header>
+                  <strong>Upload Files</strong>
+                </Card.Header>
+                <Card.Body>
+                  <div
+                    className={`border p-4 text-center rounded ${
+                      isDragging ? "bg-info" : ""
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() =>
+                      document.getElementById("fileInput")?.click()
+                    }
+                    style={{ cursor: "pointer" }}
                   >
-                    Add Subfolder
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+                    <p>
+                      {isDragging
+                        ? "Drop files to upload..."
+                        : "Drag and drop files here, or click to select files"}
+                    </p>
+                  </div>
+                  <FormControl
+                    id="fileInput"
+                    type="file"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col md={{ span: 6 }}>
+              <Card>
+                <Card.Header>
+                  <strong>Add Subfolder</strong>
+                </Card.Header>
+                <Card.Body>
+                  <Form onSubmit={handleAddSubfolder}>
+                    <FormGroup controlId="subfolderName">
+                      <FormLabel>Subfolder Name</FormLabel>
+                      <FormControl
+                        type="text"
+                        placeholder="Enter subfolder name"
+                        value={subfolderName}
+                        onChange={(e) => setSubfolderName(e.target.value)}
+                      />
+                    </FormGroup>
+                    <div className="mt-3 text-end">
+                      <Button
+                        variant="primary"
+                        type="submit"
+                        disabled={!subfolderName}
+                      >
+                        Add Subfolder
+                      </Button>
+                    </div>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </>
+      )}
     </Container>
   );
 }

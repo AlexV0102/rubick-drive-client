@@ -2,27 +2,23 @@ import { useRef, useState } from "react";
 import { Button, Container, Dropdown, Form, Modal } from "react-bootstrap";
 import { createFolder } from "../api/apiMethods/folders";
 import { uploadFile } from "../api/apiMethods/files";
+import { useGetFoldersByUser } from "../api/queries/folders";
+import { useGetFiles } from "../api/queries/files";
 
 const Navdropdown = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
-
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isPublic, setIsPublic] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const { refetch: refetchFolders } = useGetFoldersByUser();
+  const { refetch: refetchFiles } = useGetFiles();
 
   const handleFileUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
-    }
-  };
-
-  const handleFolderUploadClick = () => {
-    if (folderInputRef.current) {
-      folderInputRef.current.click();
     }
   };
 
@@ -32,6 +28,7 @@ const Navdropdown = () => {
         await createFolder(folderName);
         setShowModal(false);
         setFolderName("");
+        refetchFolders();
       } catch (error) {
         console.error("Failed to create folder:", error);
       }
@@ -51,7 +48,7 @@ const Navdropdown = () => {
 
     try {
       await uploadFile(file, isPublic);
-
+      refetchFiles();
       setShowUploadModal(false);
     } catch (error) {
       console.error("Failed to upload file:", error);
@@ -83,9 +80,6 @@ const Navdropdown = () => {
           <Dropdown.Item onClick={() => setShowUploadModal(true)}>
             Upload file
           </Dropdown.Item>
-          <Dropdown.Item onClick={handleFolderUploadClick}>
-            Upload folder
-          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
@@ -93,13 +87,6 @@ const Navdropdown = () => {
         type="file"
         ref={fileInputRef}
         style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      <input
-        type="file"
-        ref={folderInputRef}
-        style={{ display: "none" }}
-        data-webkitdirectory="true"
         onChange={handleFileChange}
       />
 

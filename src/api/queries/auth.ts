@@ -13,7 +13,7 @@ export const useGoogleAuthUrl = () =>
   });
 
 export const useGoogleLogin = () =>
-  useMutation<string, Error, string>({
+  useMutation<any, Error, string>({
     mutationFn: async (token: string) => {
       const response = await axios.post(`${API_BASE_URL}/auth/google-login`, {
         token,

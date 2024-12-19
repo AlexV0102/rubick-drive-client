@@ -5,27 +5,32 @@ import HomePage from "./pages/HomePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FilePage from "./pages/FilePage";
 import FolderPage from "./pages/FolderPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const routes = [
   {
-    path: "/",
+    path: "/*",
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/",
+        path: "",
         element: <Layout />,
         children: [
           {
-            path: "/",
+            path: "",
             element: <HomePage />,
           },
           {
-            path: "/files/:fileId",
+            path: "files/:fileId",
             element: <FilePage />,
           },
           {
-            path: "/folders/:folderId",
+            path: "folders/:folderId",
             element: <FolderPage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
           },
         ],
       },

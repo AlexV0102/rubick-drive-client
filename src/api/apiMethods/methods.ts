@@ -1,3 +1,4 @@
+import { REFRESH_TOKEN_KEY } from "../../helpers/constants";
 import { wrapErrorHandling } from "../../utils/apiWrapper";
 import { getItemLocalStorage } from "../../utils/localStorage";
 import axiosInstance from "../axios";
@@ -10,7 +11,7 @@ export const search = wrapErrorHandling(async (query: string) => {
 });
 
 export const refreshAccessToken = wrapErrorHandling(async () => {
-  const refreshToken = getItemLocalStorage("refreshToken");
+  const refreshToken = getItemLocalStorage(REFRESH_TOKEN_KEY);
   if (!refreshToken) {
     return null;
   }

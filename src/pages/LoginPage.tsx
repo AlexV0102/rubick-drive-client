@@ -3,6 +3,7 @@ import { useHandleGoogleLogin } from "../hooks/useHandleGoogleLogin";
 import { Container } from "react-bootstrap";
 import { useAuthStore } from "../store/authStore";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useEffect } from "react";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -10,9 +11,11 @@ function LoginPage() {
 
   const { login } = useHandleGoogleLogin();
 
-  if (isAuthenticated) {
-    navigate("/");
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleGoogleSuccess = (response: CredentialResponse) => {
     const { credential } = response;
@@ -31,11 +34,12 @@ function LoginPage() {
     console.error("Google Login Failed");
   };
   return (
-    <Container className="mt-5 d-flex justify-content-center align-items-center flex-column">
+    <Container className="mt-5 d-flex gap-3 justify-content-center align-items-center flex-column">
+      <h1>Welcome to Rubick board</h1>
+      <p>Login via google to continue</p>
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={handleGoogleError}
-        // disabled={isLoading}
       />
     </Container>
   );

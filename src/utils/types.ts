@@ -18,4 +18,9 @@ type FileType = ItemBase & {
   data: Blob | string;
 };
 
-export type { FolderType, FileType };
+type PermissionType = {
+  role: "viewer" | "editor";
+  email: string;
+};
+
+export type { FolderType, FileType, PermissionType };

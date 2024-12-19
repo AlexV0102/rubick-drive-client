@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import FilePreview from "../components/FilePreview";
 import { useGetFileData } from "../api/queries/files";
 import Spinner from "../components/Spinner";
-import { Button, Card } from "react-bootstrap";
+import { Card } from "react-bootstrap";
+import AccessDenied from "../components/AccessDenied";
 
 export default function FilePage() {
   const { fileId } = useParams<{ fileId: string }>();
@@ -24,7 +25,7 @@ export default function FilePage() {
   }, [blob, fileId]);
 
   if (isError) {
-    return <div>Access denied </div>;
+    return <AccessDenied />;
   }
 
   if (isLoading) {

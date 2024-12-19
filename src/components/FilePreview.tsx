@@ -1,5 +1,12 @@
 import { ReactNode, useState } from "react";
-import { Button, Modal, Form, Container, Col } from "react-bootstrap";
+import {
+  Button,
+  Modal,
+  Form,
+  Container,
+  Col,
+  InputGroup,
+} from "react-bootstrap";
 import {
   deleteFile,
   editFileName,
@@ -11,11 +18,8 @@ import { useNavigate } from "react-router-dom";
 import VisibilityPermissions from "./VisibilityModal";
 import { useGetFileData } from "../api/queries/files";
 import { useAuthStore } from "../store/authStore";
-
-type sharedWithType = {
-  email: string;
-  role: "editor" | "viewer";
-};
+import { PermissionType } from "../utils/types";
+import { joinFileName, splitFileName } from "../helpers/file";
 
 const FilePreview = ({
   children,
@@ -24,17 +28,19 @@ const FilePreview = ({
   children: ReactNode;
   metadata: {
     _id: string;
-    file: string;
+    name: string;
     owner: string;
     isPublic: boolean;
-    sharedWith: sharedWithType[];
+    sharedWith: PermissionType[];
   };
 }) => {
-  const { file, _id, isPublic, owner, sharedWith } = metadata;
+  const { name, _id, isPublic, owner, sharedWith } = metadata;
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { refetch } = useGetFileData(_id);
-  const [fileName, setFileName] = useState(file);
+  const { name: initialName, extension } = splitFileName(name);
+  console.log("name", initialName, extension);
+  const [fileName, setFileName] = useState(initialName);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
@@ -42,8 +48,10 @@ const FilePreview = ({
   const canEdit = userPermission?.role === "editor" || owner === user?.id;
 
   const handleSaveName = async () => {
+    const fullFileName = joinFileName(fileName, extension);
     setShowEditModal(false);
-    await editFileName(_id, fileName);
+    await editFileName(_id, fullFileName);
+    refetch();
   };
 
   const handleDeleteFile = async () => {
@@ -58,6 +66,7 @@ const FilePreview = ({
 
   const handleCloneFile = async () => {
     await cloneFile(_id);
+    refetch();
   };
 
   return (
@@ -96,11 +105,14 @@ const FilePreview = ({
         <Modal.Body>
           <Form.Group controlId="formFileName">
             <Form.Label>File Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={fileName}
-              onChange={(e) => setFileName(e.target.value)}
-            />
+            <InputGroup>
+              <Form.Control
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+              />
+              <InputGroup.Text>{extension}</InputGroup.Text>
+            </InputGroup>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>

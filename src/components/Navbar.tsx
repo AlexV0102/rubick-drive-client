@@ -6,7 +6,7 @@ import {
   Container,
 } from "react-bootstrap";
 import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { handleThemeSwitch } from "../utils/themeSwitcher";
 import Navdropdown from "./Navdropdown";
 
@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
   return (
     <Container className="mb-3">
       <BootstrapNavbar expand="lg">
-        <BootstrapNavbar.Brand href="/">
+        <BootstrapNavbar.Brand as={Link} to="/">
           <i className="fa-solid fa-cube me-1" />
           Rubick drive
         </BootstrapNavbar.Brand>

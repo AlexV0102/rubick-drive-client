@@ -1,9 +1,10 @@
 import { useAuthStore } from "../store/authStore";
 import { useGoogleLogin } from "../api/queries/auth";
 import { setItemLocalStorage } from "../utils/localStorage";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../helpers/constants";
 
 export const useHandleGoogleLogin = () => {
-  const { mutate, error } = useGoogleLogin();
+  const { mutate, error, isPending } = useGoogleLogin();
   const setUser = useAuthStore((state) => state.setUser);
   const setError = useAuthStore((state) => state.setError);
 
@@ -13,8 +14,8 @@ export const useHandleGoogleLogin = () => {
   ) => {
     mutate(token, {
       onSuccess: (response) => {
-        setItemLocalStorage("accessToken", response.accessToken);
-        setItemLocalStorage("refreshToken", response.refreshToken);
+        setItemLocalStorage(ACCESS_TOKEN_KEY, response.accessToken);
+        setItemLocalStorage(REFRESH_TOKEN_KEY, response.refreshToken);
         setUser(response.user);
 
         if (callbacks?.onSuccess) {
@@ -27,5 +28,5 @@ export const useHandleGoogleLogin = () => {
     });
   };
 
-  return { login: handleLogin, error };
+  return { login: handleLogin, error, isPending };
 };
