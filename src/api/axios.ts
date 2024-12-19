@@ -16,7 +16,6 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let failedQueue = [];
 
-// Helper function to process the queue of failed requests
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (token) {
